@@ -1,0 +1,170 @@
+"""
+Module containing constants for the Belgian Pandemic Model
+"""
+import numpy as np
+import model_utils as util
+
+
+CITIZENS_BELGIUM = np.array([1260000, 1300000, 1400000, 1480000, 1500000, 1580000, 1340000, 900000, 530000, 110000])
+SLOVAKIA_POPULATION = 5458000
+CITIZENS_SLOVAKIA = np.array([584271, 553218, 671350, 855120, 844036, 706598, 687251, 383048, 155994, 26101])
+CASES_INITIAL_BELGIUM = [8, 8, 9, 9, 9, 9, 9, 8, 8, 8] # total 85 in belgium on march 12 2020
+
+EXPOSED_TO_PRESYMP = 0.5  # γ
+# TODO PRESYMP_TO_ASYMP is not a fitting name for this constant
+PRESYMP_TO_ASYMP = 0.3125  # θ
+MILD_TO_SEVERE_RATE = 0.46511  # ω
+PRESYMP_TO_ASYMP_PROB = np.array([0.94, 0.90, 0.84, 0.61, 0.49, 0.21, 0.02, 0.02, 0.02, 0.02])    # p
+SYMPTOMATIC_TO_MILD = np.array([1, 1, 0.9, 0.9, 0.9, 0.9, 0.8, 0.8, 0.8, 0.8])    # Φ0
+#SYMPTOMATIC_TO_MILD = np.array([0.98, 0.98, 0.79, 0.79, 0.67, 0.67, 0.5, 0.35, 0.32, 0.32])
+HOSP_NOT_TO_ICU = np.array([1, 1, 0.85, 0.85, 0.76, 0.76, 0.73, 0.69, 0.74, 0.74])           # Φ1
+
+# Infectious factor
+# q = beta
+SYMP_INFECTIOUS_FACTOR = 0.9   # q symp
+ASYMP_INFECTIOUS_FACTOR = SYMP_INFECTIOUS_FACTOR * 0.51  # q asymp
+
+#ASYMP_INFECTIOUS_FACTOR = 0.7  # q asymp
+#SYMP_INFECTIOUS_FACTOR = 0.357   # q symp
+LOCKDOWN_MEASURES = False
+
+# recovery rates
+#ASYMP_RECOVERY = 1/1.367  # lambda : choose_from_distrib(np.arange(1.259, 1.477, 0.001), 0.056, 1.367)      # δ1
+#MILD_RECOVERY = 1/1.367  # lambda : choose_from_distrib(np.arange(1.259, 1.477, 0.001), 0.056, 1.367)       # δ2
+
+ASYMP_RECOVERY = 0.2857          # δ1
+MILD_RECOVERY = 0.2857            # δ2
+HOSP_RECOVERY = 0.0806         # δ3
+ICU_RECOVERY = 0.0714           # δ4
+
+
+
+# death probability
+HOSP_DEATH_PROB = np.array([0.000094, 0.00022, 0.00091, 0.0018, 0.004, 0.013, 0.046, 0.098, 0.18, 0.18])        # μ hosp
+ICU_DEATH_PROB = np.array([0.000094, 0.00022, 0.00091, 0.0018, 0.004, 0.013, 0.046, 0.098, 0.18, 0.18])         # μ icu
+
+#INFECTION_RATE = 2.9 #r0
+#RECOVERY_RATE = ((ASYMP_RECOVERY*np.array([1]*10) + MILD_RECOVERY*RECOVERY_VECTOR_MILD + HOSP_RECOVERY*util.inverse_probability_vector(HOSP_DEATH_PROB)+ ICU_RECOVERY*util.inverse_probability_vector(ICU_DEATH_PROB))/4)#T inf
+RECOVERY_RATE = ((ASYMP_RECOVERY*np.array([1]*10) + MILD_RECOVERY + HOSP_RECOVERY*util.inverse_probability_vector(HOSP_DEATH_PROB)+ ICU_RECOVERY*util.inverse_probability_vector(ICU_DEATH_PROB))/4)#T inf
+AVG_RECOVERY_TIME = 1/RECOVERY_RATE
+# death rates
+HOSP_DEATH_RATE = 0.1428          # τ1
+ICU_DEATH_RATE = 0.1428             # τ2
+
+SOCIAL_CONTACT_MATRIX_ASYMP = np.array([
+                        [7.71, 1.2, 0.93, 2.03, 1.03, 0.89, 0.65, 0.34, 0.27, 0.28],      # 0-10
+                        [1.23, 10.38, 2.25, 2.01, 2.19, 0.79, 0.42, 0.44, 0.11, 0.88],     # 10-20
+                        [1.03, 2.44, 6.06, 3.35, 2.95, 2.74, 0.8, 0.49, 0.85, 1.64],      # 20-30
+                        [2.4, 2.32, 3.57, 5.53, 4.38, 3.18, 1.75, 0.94, 0.75, 1.91],      # 30-40
+                        [1.36, 2.83, 3.51, 4.9, 5.56, 3.72, 2.15, 1.89, 0.99, 1.08],      # 40-50
+                        [1.06, 0.93, 2.95, 3.22, 3.36, 3.82, 1.89, 10.8, 1.09, 1.27],     # 50-60
+                        [0.59, 0.37, 0.65, 1.35, 1.48, 1.44, 1.96, 1.19, 0.74, 1.03],     # 60-70
+                        [0.24, 0.3, 0.31, 0.55, 1, 0.63, 0.92, 1.5, 0.56, 0.61],          # 70-80
+                        [0.11, 0.04, 0.31, 0.26, 0.3, 0.37, 0.33, 0.32, 1, 1.37],         # 80-90
+                        [0.1, 0.04, 0.07, 0.08, 0.04, 0.05, 0.05, 0.04, 0.16, 0.97]])     # 90+
+SOCIAL_CONTACT_MATRIX_SYMP = np.array([
+                        [1.32312369010886,0.38775667651996,0.307712690337307,1.18470054809112,0.475771243338839,0.285929232540863,0.238618333292485,0.103430896920945,0.0236481813353256,0.00592182706542457],
+                        [0.378375750622575,1.17785068471038,0.286595222274844,0.300781359610763,1.18102776250436,0.209536219749606,0.119952029877398,0.131378737947125,0.0160094398052997,0.0043060572980864],
+                        [0.277016486413057,0.264402248575702,0.777355418339118,0.254340528585325,0.33523049310498,0.528012798695932,0.0942983566171737,0.0449596711788461,0.0895625900325311,0.033563626565773],
+                        [1.00670425773769,0.261926972419314,0.240075961200802,0.791206987826706,0.332124418748308,0.246098263563182,0.205759383471516,0.0837581295020714,0.0839450096794843,0.0405530710160332],
+                        [0.366123012293719,0.931375766201314,0.286557740922594,0.300771256016993,0.801487150776856,0.274342957099102,0.152732632634941,0.151080997598824,0.0896624659457496,0.018442746860243],
+                        [0.241048778804138,0.181026214738553,0.494459377182017,0.244152744426161,0.300546278317256,0.82806775092107,0.255056527602979,0.0785414500304717,0.0859809436875618,0.0236309839210229],
+                        [0.26432543791822,0.136169155176365,0.116032344474026,0.268226378777075,0.219855913846888,0.335139191996085,0.600546729956411,0.224446847137085,0.0915475137313069,0.0199523977735137],
+                        [0.146975564209102,0.191318038565563,0.0709672149963176,0.140064636748229,0.278981786494397,0.132387622583643,0.287920907109387,0.503501202875805,0.0852533166118513,0.0141063673019904],
+                        [0.0594009364863919,0.041210479658204,0.249897539509933,0.248140191173045,0.292669446207523,0.256183630168822,0.207590247475891,0.150699559581284,0.38197049884952,0.0298818110895132],
+                        [0.119238426236811,0.0888538618112869,0.750704788329335,0.960928218382622,0.482566624797672,0.564411614953041,0.362677369134315,0.199885300478035,0.239536602648059,0.44706289423792]])
+SOCIAL_CONTACT_MATRIX_INTERVENTION_ASYMP = np.array([
+                        [1.13, 0.43, 0.32, 1.13, 0.43, 0.32, 0.28, 0.15, 0.04, 0.11],
+                        [0.44, 1.57, 0.59, 0.53, 1.3, 0.29, 0.16, 0.2, 0.06, 0.21],
+                        [0.36, 0.64, 1.52, 0.71, 0.79, 1.03, 0.26, 0.15, 0.51, 1.36],
+                        [1.34, 0.61, 0.75, 1.53, 0.95, 0.78, 0.57, 0.3, 0.44, 1.51],
+                        [0.56, 1.69, 0.94, 1.06, 1.57, 0.86, 0.54, 0.62, 0.46, 0.85],
+                        [0.38, 0.34, 1.11, 0.79, 0.77, 1.38, 0.58, 0.32, 0.49, 0.7],
+                        [0.26, 0.14, 0.21, 0.44, 0.37, 0.44, 0.82, 0.41, 0.26, 0.48],
+                        [0.1, 0.14, 0.09, 0.18, 0.33, 0.18, 0.32, 0.69, 0.25, 0.5],
+                        [0.02, 0.02, 0.18, 0.15, 0.14, 0.16, 0.11, 0.14, 0.85, 1.34],
+                        [0.01, 0.01, 0.06, 0.06, 0.03, 0.03, 0.03, 0.03, 0.16, 0.97]])
+SOCIAL_CONTACT_MATRIX_INTERVENTION_SYMP = np.array([
+    [0.789444987286886, 0.455531550680514, 0.450291712906915, 1.39439736695452, 0.3760688152275, 0.346754853281701, 0.307812752526982, 0.0962165507341599, 0.00489607047803535,0.00489607047803535],
+    [0.425705670175097, 1.08098307120846, 0.332117901309348, 0.626051056393014, 1.2817417411819, 0.241373351905563, 0.091344265880874, 0.104459073724844, 0.0343712602017816,0.0343712602017816],
+    [0.403599764371046, 0.318535809136122, 0.884423092274581, 0.333526120960737, 0.607469155256148, 0.672620128039955, 0.113031240838186, 0.0745849643818554, 0.0157102135988381, 0.0157102135988381],
+    [1.10929189100701, 0.532939689180729, 0.296027588329644, 0.691822118166138, 0.440769058533181, 0.363982457699293, 0.34420910714987, 0.09853616833053, 0.068842621317598, 0.068842621317598],
+    [0.276088033406075, 1.0069080581353, 0.497562387266989, 0.406754229079304, 0.779513318059802, 0.296448978975609, 0.195847673143897, 0.276080792814909, 0.0230310872174753, 0.0230310872174753],
+    [0.294751069227532, 0.219548861662917, 0.637889936388283, 0.388914387534822, 0.343243671256205, 0.823468590662035, 0.196197792440402, 0.184218182142857, 0.0868456032043411, 0.0868456032043411],
+    [0.360231979572087, 0.114389450386215, 0.147583294806554, 0.506359227602716, 0.312200655747515, 0.270120118648921, 0.644588626737055, 0.294068490729083, 0.0597610973552021, 0.0597610973552021 ],
+    [0.131206870991747, 0.152427031750865, 0.113475245704404, 0.168905262484006, 0.512817369768616, 0.295533315655233, 0.342657018075298, 0.795891501743615, 0.0444678643388206, 0.0444678643388206],
+    [0.0197856630488296, 0.148630326179357, 0.0708317689732492, 0.349704372326782, 0.126776023842151, 0.412874388109775, 0.206360159716329, 0.131777852319105, 0.0355780153495807,0.0355780153495807],
+    [0.0197856630488296, 0.148630326179357, 0.0708317689732492, 0.349704372326782, 0.126776023842151, 0.412874388109775, 0.206360159716329, 0.131777852319105, 0.0355780153495807, 0.0355780153495807]])
+
+
+def R0():
+    proportion_factor = []
+
+    for i in range(10):
+        if not LOCKDOWN_MEASURES:
+            q = sum(SOCIAL_CONTACT_MATRIX_ASYMP[i]) / (sum(CITIZENS_BELGIUM))
+        else:
+            q = sum(SOCIAL_CONTACT_MATRIX_INTERVENTION[i]) / (sum(CITIZENS_BELGIUM) )
+
+        proportion_factor.append(q)
+
+    return np.array(proportion_factor)
+
+
+def FOI(asymptomatic_infected, symptomatic_infected):    # λ
+    """
+    Calculates the force of infection denoted as delta
+
+    Returns
+        force_of_infection: numpy.array object of force infection for each age category
+    """
+    # calculate FOI for asymptomatic cases
+    foi_asymp = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+    foi_symp = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+
+    if not LOCKDOWN_MEASURES:
+        infection_rate_asymp = SOCIAL_CONTACT_MATRIX_ASYMP / (sum(CITIZENS_BELGIUM))
+        infection_rate_symp = SOCIAL_CONTACT_MATRIX_SYMP / (sum(CITIZENS_BELGIUM))
+
+    else:
+        infection_rate_asymp = SOCIAL_CONTACT_MATRIX_INTERVENTION_ASYMP/ (sum(CITIZENS_BELGIUM))
+        infection_rate_symp = SOCIAL_CONTACT_MATRIX_INTERVENTION_SYMP/ (sum(CITIZENS_BELGIUM))
+    infection_rate_symp *= SYMP_INFECTIOUS_FACTOR
+    infection_rate_asymp *= ASYMP_INFECTIOUS_FACTOR
+
+    for age1 in range(0, 10):
+        for age2 in range(0, 10):
+            # check whether to use the lockdown social contact matrix or the normal one
+            foi_asymp[age1] += infection_rate_asymp[age1][age2] * asymptomatic_infected[age2]
+            foi_symp[age1] += infection_rate_symp[age1][age2] * symptomatic_infected[age2]
+
+    return foi_symp + foi_asymp
+
+
+def calculate_FOI_OLD_VERSION(asymptomatic_infected, symptomatic_infected):    # λ
+    """
+    Calculates the force of infection denoted as delta
+
+    Returns
+        force_of_infection: numpy.array object of force infection for each age category
+    """
+    # calculate FOI for asymptomatic cases
+    foi_asymp = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+    foi_symp = np.array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+    for age_category1 in range(0, 10):
+        if not LOCKDOWN_MEASURES:
+            social_contact = SOCIAL_CONTACT_MATRIX_ASYMP[age_category1]
+        else:
+            social_contact = SOCIAL_CONTACT_MATRIX_INTERVENTION[age_category1]
+
+        for age_category2 in range(0, 10):
+            foi_asymp[age_category1] += social_contact[age_category2] * asymptomatic_infected[age_category2] * ASYMP_INFECTIOUS_FACTOR
+            foi_symp[age_category1] += social_contact[age_category2] * symptomatic_infected[age_category2] * SYMP_INFECTIOUS_FACTOR
+
+    return (foi_symp + foi_asymp) / sum(CITIZENS_BELGIUM)
+
+
+# matrix of social interactions after intervention Age x Age for ages
+# [0,10) [10,20) ... [80,90) [90,+)
+
